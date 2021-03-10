@@ -539,12 +539,13 @@ impl LdapConnAsync {
                                     msgmap.1.remove(&id);
                                 },
                                 LdapOp::Unbind => {
-                                    if let Err(e) = self.stream.get_mut().shutdown().await {
-                                        warn!("socket shutdown error: {}", e);
-                                        return Err(LdapError::from(e));
-                                    } else if let Err(e) = self.stream.close().await {
-                                        warn!("socket close error: {}", e);
-                                        return Err(LdapError::from(e));
+                                    match self.stream.get_mut().shutdown().await {
+                                        Ok(_) => (),
+                                        Err(e) => warn!("socket shutdown error: {}", e),
+                                    }
+                                    match self.stream.close().await {
+                                        Ok(_) => (),
+                                        Err(e) => warn!("socket close error: {}", e),
                                     }
                                 },
                             }
